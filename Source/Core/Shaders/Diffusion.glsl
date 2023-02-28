@@ -6,6 +6,9 @@ in vec2 v_TexCoords;
 
 uniform sampler2D u_Input;
 
+// Options 
+uniform float u_DiffuseSpeed;
+
 void main() {
 
 	const float[3] Weights = float[3] (1.0f, 2.0f / 3.0f, 1.0f / 6.0f);
@@ -35,6 +38,7 @@ void main() {
 	}
 
 	Total /= TotalWeight;
-	o_Data = Total;
+
+	o_Data = mix(Total, Center, 1.-u_DiffuseSpeed);
 
 }

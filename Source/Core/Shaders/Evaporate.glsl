@@ -7,6 +7,9 @@ in vec2 v_TexCoords;
 
 uniform float u_Dt;
 
+// Options
+uniform float u_EvaporateSpeed;
+
 void main() {
 
 	ivec2 Pixel = ivec2(gl_GlobalInvocationID.xy);
@@ -15,7 +18,7 @@ void main() {
 
 	if (Pixel.x > 0 && Pixel.x < Dimensions.x && Pixel.y > 0 && Pixel.y < Dimensions.y) {
 		vec4 Value = imageLoad(Image, Pixel);
-		Value -= u_Dt * 0.005f;
+		Value -= u_Dt * u_EvaporateSpeed;
 		Value = max(Value, 0.0f);
 
 		imageStore(Image, Pixel, Value);

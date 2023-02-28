@@ -10,6 +10,16 @@ namespace Simulation {
 	float Frametime = 0.0f;
 	float DeltaTime = 0.0f;
 
+	//Settings
+
+	float EvaporateSpeed = 0.01f;
+	float DiffuseSpeed = 0.2f;
+	float RotationSpeed = 2.0f;
+	float SensoryDistance = 4.0f;
+	int SensorySampleRadius = 3;
+
+	bool Paused = true;
+
 	class RayTracerApp : public Simulation::Application
 	{
 	public:
@@ -41,7 +51,18 @@ namespace Simulation {
 			if (ImGui::Begin("Debug/Edit Mode"))
 
 			{
+				ImGui::SliderFloat("Evaporation Speed", &EvaporateSpeed, 0.0001f, 0.15f);
+				ImGui::SliderFloat("Diffuse Speed", &DiffuseSpeed, 0.01f, 0.999f);
+				ImGui::SliderFloat("Rotation Speed", &RotationSpeed, 0.01f, 48.0f);
+				ImGui::SliderFloat("Sensory Distance", &SensoryDistance, 0.01f, 64.0f);
+				ImGui::SliderInt("Sensory Sample Radius", &SensorySampleRadius, 1, 8);
+			
+				std::string Text = Paused ? "Unpause" : "Pause";
 
+				if (ImGui::Button(Text.c_str())) {
+					Paused = !Paused;
+				}
+			
 			} ImGui::End();
 		}
 
@@ -86,6 +107,11 @@ namespace Simulation {
 			if (e.type == Simulation::EventTypes::KeyPress && e.key == GLFW_KEY_F3 && this->GetCurrentFrame() > 5)
 			{
 				Simulation::ShaderManager::ForceRecompileShaders();
+			}
+
+			if (e.type == Simulation::EventTypes::KeyPress && e.key == GLFW_KEY_F5 && this->GetCurrentFrame() > 5)
+			{
+				Paused = !Paused;
 			}
 
 		}
@@ -148,17 +174,18 @@ namespace Simulation {
 		Random RNG;
 		std::vector<Agent> Agents;
 
-		int AgentCount = 1024;
+		int AgentCount = 768;
 
 		Agents.resize(AgentCount);
 
 		for (int i = 0; i < AgentCount; i++) {
 			glm::vec2& Pos = Agents[i].Position;
 
-			Pos.x = (RNG.Float() * 2.0f - 1.0f) * 50.0f;
-			Pos.y = (RNG.Float() * 2.0f - 1.0f) * 50.0f;
+			Pos.x = (RNG.Float() * 2.0f - 1.0f) * 99.0f;
+			Pos.y = (RNG.Float() * 2.0f - 1.0f) * 99.0f;
 
 			Agents[i].Direction = glm::vec2(RNG.Float() * 2.0f - 1.0f, RNG.Float() * 2.0f - 1.0f);
+			//Agents[i].Direction = glm::vec2(0.0f, -1.0f);
 			Agents[i].Direction = glm::normalize(Agents[i].Direction);
 		}
 
@@ -172,6 +199,7 @@ namespace Simulation {
 		// Clear simulation map
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		SimulationMap.Bind();
+		DiffuseMap.Bind();
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		while (!glfwWindowShouldClose(app.GetWindow())) {
@@ -182,55 +210,64 @@ namespace Simulation {
 			SimulationMap.SetSize(app.GetWidth(), app.GetHeight());
 			DiffuseMap.SetSize(app.GetWidth(), app.GetHeight());
 
-			// Simulate Agents 
+			if (!Paused || app.GetCurrentFrame() < 3) {
+				// Simulate Agents 
 
-			SimulateShader.Use();
-			SimulateShader.SetMatrix4("u_OrthographicProjection", Orthographic.GetProjectionMatrix());
-			SimulateShader.SetFloat("u_Dt", DeltaTime);
-			SimulateShader.SetFloat("u_Time", glfwGetTime());
-			SimulateShader.SetInteger("u_AgentCount", AgentCount);
+				SimulateShader.Use();
+				SimulateShader.SetMatrix4("u_OrthographicProjection", Orthographic.GetProjectionMatrix());
+				SimulateShader.SetFloat("u_Dt", DeltaTime);
+				SimulateShader.SetFloat("u_Time", glfwGetTime());
+				SimulateShader.SetInteger("u_AgentCount", AgentCount);
 
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, AgentSSBO);
-			glBindImageTexture(0, SimulationMap.GetTexture(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
-			glDispatchCompute((AgentCount / 16) + 2, 1, 1);
+				SimulateShader.SetFloat("u_RotationSpeed", RotationSpeed);
+				SimulateShader.SetFloat("u_SensoryDistanceOffset", SensoryDistance);
+				SimulateShader.SetInteger("u_SensorySampleRadius", SensorySampleRadius);
 
-			
-			// Perform Diffusion
 
-			glFinish();
-			DiffuseMap.Bind();
-			DiffuseShader.Use();
-			DiffuseShader.SetInteger("u_Input", 0);
+				glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, AgentSSBO);
+				glBindImageTexture(0, SimulationMap.GetTexture(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
+				glDispatchCompute((AgentCount / 16) + 2, 1, 1);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, SimulationMap.GetTexture());
 
-			ScreenQuadVAO.Bind();
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			ScreenQuadVAO.Unbind();
+				// Perform Diffusion
 
-			DiffuseMap.Unbind();
+				glFinish();
+				DiffuseMap.Bind();
+				DiffuseShader.Use();
+				DiffuseShader.SetInteger("u_Input", 0);
+				DiffuseShader.SetFloat("u_DiffuseSpeed", DiffuseSpeed);
 
-			// Copy Framebuffers
-			SimulationMap.Bind();
-			BlitShader.Use();
-			BlitShader.SetInteger("u_Texture", 0);
-			
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, DiffuseMap.GetTexture());
-			
-			ScreenQuadVAO.Bind();
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			ScreenQuadVAO.Unbind();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, SimulationMap.GetTexture());
 
-			// Evaporate 
-			EvaporateShader.Use();
-			EvaporateShader.SetFloat("u_Dt", DeltaTime);
-			EvaporateShader.SetFloat("u_Time", glfwGetTime());
+				ScreenQuadVAO.Bind();
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				ScreenQuadVAO.Unbind();
 
-			glBindImageTexture(0, SimulationMap.GetTexture(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
-			glDispatchCompute((int)floor(float(SimulationMap.GetWidth()) / 16.0f) + 1, (int)(floor(float(SimulationMap.GetHeight())) / 16.0f) + 1, 1);
+				DiffuseMap.Unbind();
 
+				// Copy Framebuffers
+				SimulationMap.Bind();
+				BlitShader.Use();
+				BlitShader.SetInteger("u_Texture", 0);
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, DiffuseMap.GetTexture());
+
+				ScreenQuadVAO.Bind();
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+				ScreenQuadVAO.Unbind();
+
+				// Evaporate 
+				EvaporateShader.Use();
+				EvaporateShader.SetFloat("u_Dt", DeltaTime);
+				EvaporateShader.SetFloat("u_Time", glfwGetTime());
+				EvaporateShader.SetFloat("u_EvaporateSpeed", EvaporateSpeed);
+
+				glBindImageTexture(0, SimulationMap.GetTexture(), 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F);
+				glDispatchCompute((int)floor(float(SimulationMap.GetWidth()) / 16.0f) + 1, (int)(floor(float(SimulationMap.GetHeight())) / 16.0f) + 1, 1);
+
+			}
 
 			// Blit Final Result 
 			glBindFramebuffer(GL_FRAMEBUFFER,0);
