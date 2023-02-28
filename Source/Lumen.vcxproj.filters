@@ -150,6 +150,9 @@
     <ClInclude Include="Core\ShaderManager.h">
       <Filter>Source Files\Simulation</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Pipeline.h">
+      <Filter>Source Files\Simulation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\imgui\imgui.cpp">
@@ -241,6 +244,9 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Pipeline.cpp">
+      <Filter>Source Files\Simulation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
