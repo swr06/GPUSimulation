@@ -139,7 +139,7 @@ void main() {
 		vec2 Vector = vec2(cos(Angle), sin(Angle));
 
 		SimulationAgents[Index].Direction = normalize(-SimulationAgents[Index].Direction + Vector);
-		NewPosition = clamp(NewPosition, -100.0f, 100.0f);
+		NewPosition = clamp(NewPosition, -400.0f, 400.0f);
 	}
 
 	SimulationAgents[Index].Position = NewPosition;

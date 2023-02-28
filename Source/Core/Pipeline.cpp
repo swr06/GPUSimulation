@@ -164,29 +164,63 @@ namespace Simulation {
 		GLClasses::Shader& DiffuseShader = ShaderManager::GetShader("DIFFUSE");
 
 		// Matrices
-		OrthographicCamera Orthographic(-100.0f, 100.0f, -100.0f, 100.0f);
+		float OrthographicRange = 400.0f;
+		OrthographicCamera Orthographic(-400.0f, 400.0f, -400.0f, 400.0f);
 
 		// Framebuffer Output 
 		GLClasses::Framebuffer SimulationMap(16, 16, { {GL_RGBA16F, GL_RGBA, GL_FLOAT, true, true} }, true, false);
 		GLClasses::Framebuffer DiffuseMap(16, 16, { {GL_RGBA16F, GL_RGBA, GL_FLOAT, true, true} }, true, false);
 
 		// Create Agents 
-		Random RNG;
+
+		int AgentCount = 200000;
 		std::vector<Agent> Agents;
 
-		int AgentCount = 768;
+		bool SpawnInCircle = true;
+		Random RNG;
 
-		Agents.resize(AgentCount);
+		if (SpawnInCircle) {
+			Agents.resize(AgentCount);
 
-		for (int i = 0; i < AgentCount; i++) {
-			glm::vec2& Pos = Agents[i].Position;
+			const float Pi = 3.14159265359;
+			float Radius = glm::sqrt((float(AgentCount) / Pi));
 
-			Pos.x = (RNG.Float() * 2.0f - 1.0f) * 99.0f;
-			Pos.y = (RNG.Float() * 2.0f - 1.0f) * 99.0f;
+			std::cout << Radius << "\n\n";
 
-			Agents[i].Direction = glm::vec2(RNG.Float() * 2.0f - 1.0f, RNG.Float() * 2.0f - 1.0f);
-			//Agents[i].Direction = glm::vec2(0.0f, -1.0f);
-			Agents[i].Direction = glm::normalize(Agents[i].Direction);
+			float HalfR = Radius ;
+			int iHalfR = int(HalfR);
+
+			int IndexAgent = 0;
+
+			for (int x = -iHalfR; x < iHalfR; x++) {
+				for (int y = -iHalfR; y < iHalfR; y++) {
+					float p = x * x + y * y;
+
+					if (p < Radius * Radius) {
+						glm::vec2& Pos = Agents[IndexAgent].Position;
+						Pos = glm::vec2(x, y);
+						Agents[IndexAgent].Direction = glm::normalize(-Pos);
+
+						IndexAgent++;
+					}
+				}
+			}
+
+		}
+
+		else {
+			Agents.resize(AgentCount);
+
+			for (int i = 0; i < AgentCount; i++) {
+				glm::vec2& Pos = Agents[i].Position;
+
+				Pos.x = (RNG.Float() * 2.0f - 1.0f) * (OrthographicRange - 1.0f);
+				Pos.y = (RNG.Float() * 2.0f - 1.0f) * (OrthographicRange - 1.0f);
+
+				Agents[i].Direction = glm::vec2(RNG.Float() * 2.0f - 1.0f, RNG.Float() * 2.0f - 1.0f);
+				//Agents[i].Direction = glm::vec2(0.0f, -1.0f);
+				Agents[i].Direction = glm::normalize(Agents[i].Direction);
+			}
 		}
 
 		// Agent SSBO
