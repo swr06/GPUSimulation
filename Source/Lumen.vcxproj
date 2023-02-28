@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Agent.h" />
     <ClInclude Include="Core\Application\Application.h" />
     <ClInclude Include="Core\Application\Logger.h" />
     <ClInclude Include="Core\GLClasses\ComputeShader.h" />
@@ -232,6 +233,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Core\Shaders\Blit.glsl" />
+    <None Include="Core\Shaders\Diffusion.glsl" />
+    <None Include="Core\Shaders\Evaporate.glsl" />
     <None Include="Core\Shaders\FBOVert.glsl" />
     <None Include="Core\Shaders\Simulate.glsl" />
   </ItemGroup>

@@ -156,6 +156,9 @@
     <ClInclude Include="Core\Orthographic.h">
       <Filter>Source Files\Simulation</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Agent.h">
+      <Filter>Source Files\Simulation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\imgui\imgui.cpp">
@@ -263,6 +266,12 @@
       <Filter>Source Files\Simulation\Shaders</Filter>
     </None>
     <None Include="Core\Shaders\Simulate.glsl">
+      <Filter>Source Files\Simulation\Shaders</Filter>
+    </None>
+    <None Include="Core\Shaders\Evaporate.glsl">
+      <Filter>Source Files\Simulation\Shaders</Filter>
+    </None>
+    <None Include="Core\Shaders\Diffusion.glsl">
       <Filter>Source Files\Simulation\Shaders</Filter>
     </None>
   </ItemGroup>
