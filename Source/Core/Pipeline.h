@@ -8,9 +8,11 @@
 #include "GLClasses/VertexArray.h"
 #include "GLClasses/VertexBuffer.h"
 #include "GLClasses/IndexBuffer.h"
+#include "GLClasses/Framebuffer.h"
 #include "GLClasses/Shader.h"
 #include "ShaderManager.h"
 #include "GLClasses/Fps.h"
+#include "Orthographic.h"
 
 namespace Simulation {
 	namespace Pipeline {

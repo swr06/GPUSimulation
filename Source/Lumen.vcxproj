@@ -165,6 +165,7 @@
     <ClInclude Include="Core\GLClasses\TextureArray.h" />
     <ClInclude Include="Core\GLClasses\VertexArray.h" />
     <ClInclude Include="Core\GLClasses\VertexBuffer.h" />
+    <ClInclude Include="Core\Orthographic.h" />
     <ClInclude Include="Core\Pipeline.h" />
     <ClInclude Include="Core\ShaderManager.h" />
     <ClInclude Include="Core\Utils\Random.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="Core\GLClasses\TextureArray.cpp" />
     <ClCompile Include="Core\GLClasses\VertexArray.cpp" />
     <ClCompile Include="Core\GLClasses\VertexBuffer.cpp" />
+    <ClCompile Include="Core\Orthographic.cpp" />
     <ClCompile Include="Core\Pipeline.cpp" />
     <ClCompile Include="Core\ShaderManager.cpp" />
     <ClCompile Include="Dependencies\glad\src\glad.c" />

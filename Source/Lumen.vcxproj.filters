@@ -153,6 +153,9 @@
     <ClInclude Include="Core\Pipeline.h">
       <Filter>Source Files\Simulation</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Orthographic.h">
+      <Filter>Source Files\Simulation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\imgui\imgui.cpp">
@@ -246,6 +249,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Pipeline.cpp">
+      <Filter>Source Files\Simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Orthographic.cpp">
       <Filter>Source Files\Simulation</Filter>
     </ClCompile>
   </ItemGroup>

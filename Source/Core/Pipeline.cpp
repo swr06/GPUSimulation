@@ -89,6 +89,9 @@ namespace Simulation {
 
 	};
 
+	GLClasses::Framebuffer Map(16, 16, { {GL_RGBA16F, GL_RGBA, GL_FLOAT, true, true}, {GL_R16F, GL_RED, GL_FLOAT, true, true} }, false, false);
+
+
 	void Pipeline::StartPipeline()
 	{
 		const glm::mat4 ZOrientMatrix = glm::mat4(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec4(1.0f));
@@ -123,12 +126,26 @@ namespace Simulation {
 
 		ShaderManager::CreateShaders();
 
+		// Shaders
 		GLClasses::Shader& BlitShader = ShaderManager::GetShader("BLIT");
 
 
+		// Matrices
+		OrthographicCamera Orthographic(0.0f, 0.0f, 1.0f, 1.0f);
+
 		while (!glfwWindowShouldClose(app.GetWindow())) {
 
+			Orthographic.SetProjection(0.0f, app.GetWidth(), 0.0f, app.GetHeight());
+
 			app.OnUpdate();
+
+			BlitShader.Use();
+
+			ScreenQuadVAO.Bind();
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			ScreenQuadVAO.Unbind();
+
+			glUseProgram(0);
 
 			glFinish();
 			app.FinishFrame();
