@@ -274,5 +274,8 @@
     <None Include="Core\Shaders\Diffusion.glsl">
       <Filter>Source Files\Simulation\Shaders</Filter>
     </None>
+    <None Include="Core\Shaders\BlitFinal.glsl">
+      <Filter>Source Files\Simulation\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

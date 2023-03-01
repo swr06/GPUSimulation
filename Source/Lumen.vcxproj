@@ -233,6 +233,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Core\Shaders\Blit.glsl" />
+    <None Include="Core\Shaders\BlitFinal.glsl" />
     <None Include="Core\Shaders\Diffusion.glsl" />
     <None Include="Core\Shaders\Evaporate.glsl" />
     <None Include="Core\Shaders\FBOVert.glsl" />

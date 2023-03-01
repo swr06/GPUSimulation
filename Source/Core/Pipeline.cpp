@@ -11,12 +11,11 @@ namespace Simulation {
 	float DeltaTime = 0.0f;
 
 	//Settings
-
-	float EvaporateSpeed = 0.01f;
+	float EvaporateSpeed = 0.03f;
 	float DiffuseSpeed = 0.2f;
-	float RotationSpeed = 2.0f;
-	float SensoryDistance = 4.0f;
-	int SensorySampleRadius = 3;
+	float RotationSpeed = 14.0f;
+	float SensoryDistance = 4.5f;
+	int SensorySampleRadius = 4;
 	float DeltaTimeMultiplier = 1.0f;
 
 	bool Paused = true;
@@ -52,14 +51,14 @@ namespace Simulation {
 			if (ImGui::Begin("Debug/Edit Mode"))
 
 			{
-				ImGui::SliderFloat("Evaporation Speed", &EvaporateSpeed, 0.0001f, 0.15f);
+				ImGui::SliderFloat("Evaporation Speed", &EvaporateSpeed, 0.0001f, 0.5f);
 				ImGui::SliderFloat("Diffuse Speed", &DiffuseSpeed, 0.01f, 0.999f);
 				ImGui::SliderFloat("Rotation Speed", &RotationSpeed, 0.01f, 48.0f);
 				ImGui::SliderFloat("Sensory Distance", &SensoryDistance, 0.01f, 64.0f);
 				ImGui::SliderInt("Sensory Sample Radius", &SensorySampleRadius, 1, 8);
 				ImGui::SliderFloat("Time Scale", &DeltaTimeMultiplier, 0.1f, 8.0f);
 			
-				std::string Text = Paused ? "Unpause" : "Pause";
+				std::string Text = Paused ? "Unpause (F5)" : "Pause (F5)";
 
 				if (ImGui::Button(Text.c_str())) {
 					Paused = !Paused;
@@ -126,6 +125,11 @@ namespace Simulation {
 
 	void Pipeline::StartPipeline()
 	{
+		// Options
+		int AgentCount = 500000;
+		bool SpawnInCircle = true;
+
+
 		// ZOrient
 		const glm::mat4 ZOrientMatrix = glm::mat4(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec4(1.0f));
 		const glm::mat4 ZOrientMatrixNegative = glm::mat4(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.0f), glm::vec4(0.0f, -1.0f, 0.0f, 0.0f), glm::vec4(1.0f));
@@ -161,6 +165,7 @@ namespace Simulation {
 
 		// Shaders
 		GLClasses::Shader& BlitShader = ShaderManager::GetShader("BLIT");
+		GLClasses::Shader& FinalBlitShader = ShaderManager::GetShader("BLITF");
 		GLClasses::ComputeShader& SimulateShader = ShaderManager::GetComputeShader("SIMULATE");
 		GLClasses::ComputeShader& EvaporateShader = ShaderManager::GetComputeShader("EVAPORATE");
 		GLClasses::Shader& DiffuseShader = ShaderManager::GetShader("DIFFUSE");
@@ -175,14 +180,23 @@ namespace Simulation {
 
 		// Create Agents 
 
-		int AgentCount = 500000;
+		std::cout << "\n\nEnter Agent Count (1 - 2000000) : ";
+		std::cin >> AgentCount;
+		AgentCount = glm::clamp(AgentCount, 1, 2000000);
+		std::cout << "\n\nEnter Spawn Type (0 : Randomly in space, 1 : In circle, directed towards the center) : ";
+		std::cin >> SpawnInCircle;
+
 		std::vector<Agent> Agents;
 
-		bool SpawnInCircle = false;
 		Random RNG;
 
 		if (SpawnInCircle) {
 			Agents.resize(AgentCount);
+
+			for (auto& e : Agents) {
+				e.Position = glm::vec2(1000000.0f);
+				e.Direction = glm::vec2(0.0f);
+			}
 
 			const float Pi = 3.14159265359;
 			float Radius = glm::sqrt((float(AgentCount) / Pi)) * 0.5f;
@@ -242,12 +256,13 @@ namespace Simulation {
 		GLuint AgentSSBO = 0;
 		glGenBuffers(1, &AgentSSBO);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, AgentSSBO);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Agent) * AgentCount, (void*)Agents.data(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Agent) * AgentCount, (void*)Agents.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		// Clear simulation map
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		SimulationMap.Bind();
+		glClear(GL_COLOR_BUFFER_BIT);
 		DiffuseMap.Bind();
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -323,8 +338,8 @@ namespace Simulation {
 
 			// Blit Final Result 
 			glBindFramebuffer(GL_FRAMEBUFFER,0);
-			BlitShader.Use();
-			BlitShader.SetInteger("u_Texture", 0);
+			FinalBlitShader.Use();
+			FinalBlitShader.SetInteger("u_Texture", 0);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, SimulationMap.GetTexture());

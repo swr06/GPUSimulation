@@ -7,6 +7,7 @@ static std::unordered_map<std::string, GLClasses::ComputeShader> ShaderManager_S
 void Simulation::ShaderManager::CreateShaders()
 {
 	AddShader("BLIT", "Core/Shaders/FBOVert.glsl", "Core/Shaders/Blit.glsl");
+	AddShader("BLITF", "Core/Shaders/FBOVert.glsl", "Core/Shaders/BlitFinal.glsl");
 	AddShader("DIFFUSE", "Core/Shaders/FBOVert.glsl", "Core/Shaders/Diffusion.glsl");
 	AddComputeShader("SIMULATE", "Core/Shaders/Simulate.glsl");
 	AddComputeShader("EVAPORATE", "Core/Shaders/Evaporate.glsl");
