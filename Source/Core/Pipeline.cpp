@@ -17,6 +17,7 @@ namespace Simulation {
 	float RotationSpeed = 2.0f;
 	float SensoryDistance = 4.0f;
 	int SensorySampleRadius = 3;
+	float DeltaTimeMultiplier = 1.0f;
 
 	bool Paused = true;
 
@@ -56,6 +57,7 @@ namespace Simulation {
 				ImGui::SliderFloat("Rotation Speed", &RotationSpeed, 0.01f, 48.0f);
 				ImGui::SliderFloat("Sensory Distance", &SensoryDistance, 0.01f, 64.0f);
 				ImGui::SliderInt("Sensory Sample Radius", &SensorySampleRadius, 1, 8);
+				ImGui::SliderFloat("Time Scale", &DeltaTimeMultiplier, 0.1f, 8.0f);
 			
 				std::string Text = Paused ? "Unpause" : "Pause";
 
@@ -173,17 +175,17 @@ namespace Simulation {
 
 		// Create Agents 
 
-		int AgentCount = 200000;
+		int AgentCount = 500000;
 		std::vector<Agent> Agents;
 
-		bool SpawnInCircle = true;
+		bool SpawnInCircle = false;
 		Random RNG;
 
 		if (SpawnInCircle) {
 			Agents.resize(AgentCount);
 
 			const float Pi = 3.14159265359;
-			float Radius = glm::sqrt((float(AgentCount) / Pi));
+			float Radius = glm::sqrt((float(AgentCount) / Pi)) * 0.5f;
 
 			std::cout << Radius << "\n\n";
 
@@ -192,19 +194,32 @@ namespace Simulation {
 
 			int IndexAgent = 0;
 
-			for (int x = -iHalfR; x < iHalfR; x++) {
-				for (int y = -iHalfR; y < iHalfR; y++) {
-					float p = x * x + y * y;
+			float Aspect = float(app.GetWidth()) / float(app.GetHeight());
 
-					if (p < Radius * Radius) {
-						glm::vec2& Pos = Agents[IndexAgent].Position;
-						Pos = glm::vec2(x, y);
-						Agents[IndexAgent].Direction = glm::normalize(-Pos);
+			for (int ix = -iHalfR; ix < iHalfR; ix++) {
+				for (int iy = -iHalfR; iy < iHalfR; iy++) {
 
-						IndexAgent++;
+					glm::vec2 Offsets[4] = { {1.0f, 0.0f}, {-1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, -1.0f} };
+
+					for (int i = 0; i < 4; i++) {
+
+						float x = float(ix) + Offsets[i].x * 0.5f;
+						float y = float(iy) + Offsets[i].y * 0.5f;
+
+						float p = x * x + y * y;
+
+						if (p < Radius * Radius) {
+							glm::vec2& Pos = Agents[IndexAgent].Position;
+							Pos = glm::vec2(x, y * Aspect * Aspect);
+							Agents[IndexAgent].Direction = glm::normalize(Pos);
+
+							IndexAgent++;
+						}
 					}
 				}
 			}
+
+			std::cout << "IndexAgents : " << IndexAgent;
 
 		}
 
@@ -245,6 +260,9 @@ namespace Simulation {
 			DiffuseMap.SetSize(app.GetWidth(), app.GetHeight());
 
 			if (!Paused || app.GetCurrentFrame() < 3) {
+
+				DeltaTime *= DeltaTimeMultiplier;
+
 				// Simulate Agents 
 
 				SimulateShader.Use();
@@ -324,7 +342,7 @@ namespace Simulation {
 			DeltaTime = CurrentTime - Frametime;
 			Frametime = glfwGetTime();
 
-			GLClasses::DisplayFrameRate(app.GetWindow(), "Candela ");
+			GLClasses::DisplayFrameRate(app.GetWindow(), "Simulation ");
 		}
 	}
 }

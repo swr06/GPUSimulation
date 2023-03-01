@@ -18,7 +18,7 @@ void main() {
 
 	if (Pixel.x > 0 && Pixel.x < Dimensions.x && Pixel.y > 0 && Pixel.y < Dimensions.y) {
 		vec4 Value = imageLoad(Image, Pixel);
-		Value -= u_Dt * u_EvaporateSpeed;
+		Value -= u_Dt * 1.25 * u_EvaporateSpeed;
 		Value = max(Value, 0.0f);
 
 		imageStore(Image, Pixel, Value);

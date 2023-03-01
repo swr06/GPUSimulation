@@ -77,7 +77,7 @@ vec2 GetWeightedDirectionNorm(vec2 OriginalDirection, vec2 PixelP) {
 	vec2 DirectionL = RotNeg45Deg * OriginalDirection;
 	vec2 DirectionR = Rot45Deg * OriginalDirection;
 	vec2 DirectionC = OriginalDirection;
-	vec2 Hash = hash2();
+	vec2 Hash = hash2(); // * (sin(u_Time) * 0.5f + 0.5f);
 
 	float ConcentrationL = GetConcentration(PixelP + DirectionL * u_SensoryDistanceOffset).x;
 	float ConcentrationR = GetConcentration(PixelP + DirectionR * u_SensoryDistanceOffset).x;

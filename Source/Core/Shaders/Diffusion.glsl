@@ -23,7 +23,7 @@ void main() {
 
 		for (int y = -1 ; y <= 1 ; y++) {
 
-			float Weight = Weights[abs(x)] * Weights[abs(y)];
+			float Weight = 1.0f; //Weights[abs(x)] * Weights[abs(y)];
 			TotalWeight += Weight;
 
 			vec4 Sample = texture(u_Input, v_TexCoords + vec2(x,y) * TexelSize);
