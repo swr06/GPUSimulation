@@ -50,8 +50,4 @@ A Basic Slime Mould Simulation based on a positive feedback loop and diffusion.
 
 </br>
 
-</br>
 
-![s7](https://github.com/swr06/GPUSimulation/blob/main/Screenshots/7.png)
-
-</br>
